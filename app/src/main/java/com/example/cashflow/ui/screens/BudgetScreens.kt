@@ -11,6 +11,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.cashflow.domain.Budget
+import com.example.cashflow.domain.formatRupiah
 import com.example.cashflow.navigation.Routes
 import com.example.cashflow.ui.CashflowViewModel
 
@@ -44,8 +45,8 @@ fun BudgetListScreen(navController: NavController, viewModel: CashflowViewModel)
                             }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Batas: Rp ${budget.limitAmount}")
-                        Text("Terpakai: Rp $spent", color = if (spent > budget.limitAmount) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                        Text("Batas: ${budget.limitAmount.formatRupiah()}")
+                        Text("Terpakai: ${spent.formatRupiah()}", color = if (spent > budget.limitAmount) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(8.dp))
                         LinearProgressIndicator(
                             progress = (spent / budget.limitAmount).toFloat().coerceIn(0f, 1f),

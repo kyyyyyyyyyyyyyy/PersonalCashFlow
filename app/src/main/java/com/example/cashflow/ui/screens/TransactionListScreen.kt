@@ -10,6 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import com.example.cashflow.domain.formatRupiah
 import com.example.cashflow.navigation.Routes
 import com.example.cashflow.ui.CashflowViewModel
 import java.text.SimpleDateFormat
@@ -32,7 +33,7 @@ fun TransactionListScreen(navController: NavController, viewModel: CashflowViewM
                     supportingContent = { Text("${t.category} - ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(t.date))}") },
                     trailingContent = {
                         Text(
-                            "Rp ${t.amount}",
+                            t.amount.formatRupiah(),
                             color = if (t.type == "INCOME") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                         )
                     },

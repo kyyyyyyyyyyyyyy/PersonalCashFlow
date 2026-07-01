@@ -9,6 +9,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.cashflow.domain.Transaction
+import com.example.cashflow.domain.formatRupiah
+import com.example.cashflow.domain.formatRupiahInput
 import com.example.cashflow.navigation.Routes
 import com.example.cashflow.ui.CashflowViewModel
 
@@ -35,7 +37,7 @@ fun AddTransactionScreen(navController: NavController, viewModel: CashflowViewMo
             Spacer(modifier = Modifier.height(24.dp))
             Button(onClick = {
                 if (amount.isNotBlank()) {
-                    viewModel.addTransaction(Transaction(type = type, amount = amount.toDoubleOrNull() ?: 0.0, category = category, date = System.currentTimeMillis(), note = note))
+                    viewModel.addTransaction(Transaction(type = type, amount = amount.replace(".", "").toDoubleOrNull() ?: 0.0, category = category, date = System.currentTimeMillis(), note = note))
                     navController.popBackStack()
                 }
             }, modifier = Modifier.fillMaxWidth()) {
@@ -47,7 +49,7 @@ fun AddTransactionScreen(navController: NavController, viewModel: CashflowViewMo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailTransactionScreen(navController: NavController, viewModel: CashflowViewModel, id: Int) {
+fun DetailTransactionScreen(navController: NavController, viewModel: CashflowViewModel, id: String) {
     val transactions by viewModel.transactions.collectAsState()
     val t = transactions.find { it.id == id }
 
@@ -56,11 +58,11 @@ fun DetailTransactionScreen(navController: NavController, viewModel: CashflowVie
             Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
                 Text("Tipe: ${t.type}", style = MaterialTheme.typography.titleMedium)
                 Text("Kategori: ${t.category}")
-                Text("Jumlah: Rp ${t.amount}", style = MaterialTheme.typography.headlineSmall)
+                Text("Jumlah: ${t.amount.formatRupiah()}", style = MaterialTheme.typography.headlineSmall)
                 Text("Catatan: ${t.note}")
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { navController.navigate(Routes.EDIT_TRANSACTION.replace("{id}", id.toString())) }, modifier = Modifier.weight(1f)) {
+                    Button(onClick = { navController.navigate(Routes.EDIT_TRANSACTION.replace("{id}", id)) }, modifier = Modifier.weight(1f)) {
                         Text("Edit")
                     }
                     Button(onClick = {
@@ -79,13 +81,13 @@ fun DetailTransactionScreen(navController: NavController, viewModel: CashflowVie
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditTransactionScreen(navController: NavController, viewModel: CashflowViewModel, id: Int) {
+fun EditTransactionScreen(navController: NavController, viewModel: CashflowViewModel, id: String) {
     val transactions by viewModel.transactions.collectAsState()
     val t = transactions.find { it.id == id }
 
     if (t != null) {
         var type by remember { mutableStateOf(t.type) }
-        var amount by remember { mutableStateOf(t.amount.toString()) }
+        var amount by remember { mutableStateOf(t.amount.toLong().toString().formatRupiahInput()) }
         var category by remember { mutableStateOf(t.category) }
         var note by remember { mutableStateOf(t.note) }
 
@@ -96,7 +98,10 @@ fun EditTransactionScreen(navController: NavController, viewModel: CashflowViewM
                     FilterChip(selected = type == "INCOME", onClick = { type = "INCOME" }, label = { Text("Pemasukan") })
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                OutlinedTextField(value = amount, onValueChange = { amount = it }, label = { Text("Jumlah (Rp)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = amount, onValueChange = {
+                val raw = it.replace(".", "")
+                if (raw.all { c -> c.isDigit() } || raw.isEmpty()) amount = raw.formatRupiahInput()
+            }, label = { Text("Jumlah (Rp)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(value = category, onValueChange = { category = it }, label = { Text("Kategori") }, modifier = Modifier.fillMaxWidth())
                 Spacer(modifier = Modifier.height(8.dp))
@@ -104,7 +109,7 @@ fun EditTransactionScreen(navController: NavController, viewModel: CashflowViewM
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(onClick = {
                     if (amount.isNotBlank()) {
-                        viewModel.addTransaction(Transaction(id = id, type = type, amount = amount.toDoubleOrNull() ?: 0.0, category = category, date = t.date, note = note))
+                        viewModel.addTransaction(Transaction(id = id, type = type, amount = amount.replace(".", "").toDoubleOrNull() ?: 0.0, category = category, date = t.date, note = note))
                         navController.popBackStack()
                         navController.popBackStack() // kembali ke list
                     }

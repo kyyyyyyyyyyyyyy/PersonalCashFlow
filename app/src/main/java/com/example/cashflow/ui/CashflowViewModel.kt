@@ -3,7 +3,7 @@ package com.example.cashflow.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cashflow.domain.CashflowRepository
-import com.example.cashflow.domain.CurrencyResponse
+import com.example.cashflow.domain.ComparisonType
 import com.example.cashflow.domain.Transaction
 import com.example.cashflow.domain.Budget
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,8 +19,14 @@ class CashflowViewModel(private val repository: CashflowRepository) : ViewModel(
     private val _budgets = MutableStateFlow<List<Budget>>(emptyList())
     val budgets: StateFlow<List<Budget>> = _budgets.asStateFlow()
 
-    private val _currencyRates = MutableStateFlow<CurrencyResponse?>(null)
-    val currencyRates: StateFlow<CurrencyResponse?> = _currencyRates.asStateFlow()
+    private val _comparisonType = MutableStateFlow(repository.getComparisonType())
+    val comparisonType: StateFlow<ComparisonType> = _comparisonType.asStateFlow()
+
+    private val _comparisonText = MutableStateFlow("Memuat...")
+    val comparisonText: StateFlow<String> = _comparisonText.asStateFlow()
+
+    private val _minBalance = MutableStateFlow(repository.getMinBalance())
+    val minBalance: StateFlow<Double> = _minBalance.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -33,15 +39,30 @@ class CashflowViewModel(private val repository: CashflowRepository) : ViewModel(
                 _budgets.value = list
             }
         }
-        fetchRates()
+        fetchComparison()
     }
 
-    private fun fetchRates() {
+    fun setComparisonType(type: ComparisonType) {
+        repository.setComparisonType(type)
+        _comparisonType.value = type
+        fetchComparison()
+    }
+
+    fun setMinBalance(value: Double) {
+        repository.setMinBalance(value)
+        _minBalance.value = value
+    }
+
+    private fun fetchComparison() {
         viewModelScope.launch {
-            val result = repository.getExchangeRates()
-            if (result.isSuccess) {
-                _currencyRates.value = result.getOrNull()
+            val cached = repository.getCachedComparisonText()
+            if (cached != null) {
+                _comparisonText.value = cached
+                return@launch
             }
+            _comparisonText.value = "Memuat..."
+            val result = repository.refreshComparison()
+            _comparisonText.value = result.getOrElse { "Gagal memuat" }
         }
     }
 

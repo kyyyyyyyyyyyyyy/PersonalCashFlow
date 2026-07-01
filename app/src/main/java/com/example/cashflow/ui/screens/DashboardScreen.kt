@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.cashflow.domain.formatRupiah
 import com.example.cashflow.navigation.Routes
 import com.example.cashflow.ui.CashflowViewModel
 import androidx.compose.material.icons.Icons
@@ -27,7 +28,8 @@ import java.util.Locale
 @Composable
 fun DashboardScreen(navController: NavController, viewModel: CashflowViewModel) {
     val transactions by viewModel.transactions.collectAsState()
-    val rates by viewModel.currencyRates.collectAsState()
+    val comparisonText by viewModel.comparisonText.collectAsState()
+    val minBalance by viewModel.minBalance.collectAsState()
 
     val totalIncome = transactions.filter { it.type == "INCOME" }.sumOf { it.amount }
     val totalExpense = transactions.filter { it.type == "EXPENSE" }.sumOf { it.amount }
@@ -46,16 +48,25 @@ fun DashboardScreen(navController: NavController, viewModel: CashflowViewModel) 
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Saldo Saat Ini", style = MaterialTheme.typography.titleMedium)
-                    Text("Rp $balance", style = MaterialTheme.typography.headlineMedium)
+                    Text(
+                        balance.formatRupiah(),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = if (minBalance > 0 && balance < minBalance) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                    )
+                    if (minBalance > 0 && balance < minBalance) {
+                        Text(
+                            "Saldo di bawah batas aman (min ${minBalance.formatRupiah()})",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Masuk: Rp $totalIncome", color = MaterialTheme.colorScheme.primary)
-                        Text("Keluar: Rp $totalExpense", color = MaterialTheme.colorScheme.error)
+                        Text("Masuk: ${totalIncome.formatRupiah()}", color = MaterialTheme.colorScheme.primary)
+                        Text("Keluar: ${totalExpense.formatRupiah()}", color = MaterialTheme.colorScheme.error)
                     }
-                    rates?.let {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Kurs EUR: ${it.rates["EUR"]}", style = MaterialTheme.typography.bodySmall)
-                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("$comparisonText", style = MaterialTheme.typography.bodySmall)
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -67,7 +78,7 @@ fun DashboardScreen(navController: NavController, viewModel: CashflowViewModel) 
                         supportingContent = { Text(SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(t.date))) },
                         trailingContent = {
                             Text(
-                                "Rp ${t.amount}",
+                                t.amount.formatRupiah(),
                                 color = if (t.type == "INCOME") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                             )
                         },

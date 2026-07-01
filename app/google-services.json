@@ -12,7 +12,20 @@
           "package_name": "com.example.cashflow"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1006152561568-t1jh2328flkkqkgudkutjutrjikfud15.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cashflow",
+            "certificate_hash": "1f59f07fc4d4db03fe4d6e78fb335df6adaf31b6"
+          }
+        },
+        {
+          "client_id": "1006152561568-6r6e24jjgvugh9ae0cqg2upupg8m0cae.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCLJkUY-PSBJFobC7ohgZB71iYypvAKjqk"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1006152561568-6r6e24jjgvugh9ae0cqg2upupg8m0cae.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
