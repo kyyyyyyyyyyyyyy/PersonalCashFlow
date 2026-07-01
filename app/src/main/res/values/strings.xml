@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Personal Cashflow</string>
+    <!-- Web client ID from Firebase Console for Google Sign-In -->
+    <!-- Jika tidak diisi, tombol Google Sign-In tidak akan muncul -->
+    <string name="default_web_client_id" translatable="false"></string>
+</resources>
